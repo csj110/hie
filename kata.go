@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	chinese "golang.org/x/text/encoding/simplifiedchinese"
@@ -18,9 +19,9 @@ func main() {
 	fmt.Print("faf\n")
 	quote := `If you wish to make an apple pie from scratch, you must first invent the universe.`
 	cipher := IterativeRotationCipher{}
-	result := cipher.encode(10, quote)
+	result := cipher.encode(5, quote)
 	fmt.Println(result)
-	result1 := cipher.decode(10, result)
+	result1 := cipher.decode(result)
 	fmt.Println(result1)
 }
 
@@ -150,17 +151,20 @@ func (i *IterativeRotationCipher) encode(times int, quote string) string {
 		result = tempStr
 	}
 
-	return "$times " + result
+	result = fmt.Sprintf("%v %s", times, result)
+	return result
 }
 
-func (i *IterativeRotationCipher) decode(times int, quote string) string {
-	result := quote[len("${times} "):]
+func (i *IterativeRotationCipher) decode(quote string) string {
+	var timesString = strings.Split(quote, " ")[0]
+	var times,_ = strconv.Atoi(timesString)
+	result := quote[len(timesString)+1:]
 	for i := 0; i < times; i++ {
 		strSlice, tempSpaceIndex := splitBySpace(result)
 		for index, j := range strSlice {
 			strSlice[index] = moveLeft(j, times)
 		}
-		tempStr := strings.Join(strSlice,"")
+		tempStr := strings.Join(strSlice, "")
 		tempStr = moveLeft(tempStr, times)
 		result = insertSpace(tempStr, tempSpaceIndex)
 	}
